@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package com.github.mbolotov.jsontoschema.services
 
-import org.jetbrains.plugins.template.MyBundle
+import com.github.mbolotov.jsontoschema.MyBundle
 
 class MyApplicationService {
 
