@@ -50,6 +50,13 @@ qodana {
     showReport.set(System.getenv("QODANA_SHOW_REPORT").toBoolean())
 }
 
+dependencies {
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.9.10")
+    implementation("org.json:json:20170516")
+    implementation("commons-io:commons-io:2.5")
+    implementation("com.github.everit-org.json-schema:org.everit.json.schema:1.6.0")
+}
+
 tasks {
     // Set the JVM compatibility versions
     properties("javaVersion").let {
@@ -119,4 +126,8 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }
+}
+
+repositories {
+    maven("https://jitpack.io")
 }
