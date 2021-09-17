@@ -8,7 +8,7 @@ Generates JSON Schema based on JSON data. Plugin adds the 'Generate JSON Schema'
 
 - Using IDE built-in plugin system:
   
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "json-to-schema"</kbd> >
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "JSON to Schema"</kbd> >
   <kbd>Install Plugin</kbd>
   
 - Manually:
