@@ -3,6 +3,7 @@ package me.mbolotov.json.schema.generator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeType
+import com.fasterxml.jackson.databind.node.JsonNodeType.*
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -44,23 +45,25 @@ object JsonSchemaGenerator {
         jsonNode: JsonNode, nodeType: JsonNodeType, key: String
     ): String {
         val result = StringBuilder("\"$key\": { \"type\": \"")
-        var node: JsonNode? = null
+        val node: JsonNode?
         when (nodeType) {
-            JsonNodeType.ARRAY -> {
+            ARRAY -> {
                 node = jsonNode[key][0]
                 result.append("array\", \"items\": { \"properties\":")
-                result.append(outputAsString(null, null, node.toString(), JsonNodeType.ARRAY))
+                result.append(outputAsString(null, null, node.toString(), ARRAY))
                 result.append("}},")
             }
-            JsonNodeType.BOOLEAN -> result.append("boolean\" },")
-            JsonNodeType.NUMBER -> result.append("number\" },")
-            JsonNodeType.OBJECT -> {
+            BOOLEAN -> result.append("boolean\" },")
+            NUMBER -> result.append("number\" },")
+            OBJECT -> {
                 node = jsonNode[key]
                 result.append("object\", \"properties\": ")
-                result.append(outputAsString(null, null, node.toString(), JsonNodeType.OBJECT))
+                result.append(outputAsString(null, null, node.toString(), OBJECT))
                 result.append("},")
             }
-            JsonNodeType.STRING -> result.append("string\" },")
+            STRING -> result.append("string\" },")
+            NULL -> result.append("null\" },")
+            BINARY, MISSING, POJO -> {/*just skipping it*/}
         }
         return result.toString()
     }
