@@ -5,6 +5,7 @@
     <vendor>mbolotov</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.json</depends>
 
     <actions>
           <action id="me.mbolotov.json.schema.generator"

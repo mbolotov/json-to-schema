@@ -3,69 +3,66 @@ package me.mbolotov.json.schema.generator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeType
-import com.fasterxml.jackson.databind.node.JsonNodeType.*
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import org.json.JSONTokener
 
-// based on the code from https://github.com/simplymequeeny/json-string-schema-generator
 object JsonSchemaGenerator {
     private val objectMapper = ObjectMapper()
+
     fun outputAsString(
-        title: String?, description: String?,
+        title: String?,
+        description: String?,
         json: String
     ): String {
-        return cleanup(outputAsString(title, description, json, null))
-    }
-
-    private fun outputAsString(
-        title: String?, description: String?,
-        json: String, type: JsonNodeType?
-    ): String {
         val jsonNode = objectMapper.readTree(json)
-        val output = StringBuilder()
-        output.append("{")
-        if (type == null) output.append(
-            "\"title\": \"" +
-                title + "\", \"description\": \"" +
-                description + "\", \"type\": \"object\", \"properties\": {"
-        )
-        val iterator = jsonNode.fieldNames()
-        while (iterator.hasNext()) {
-            val fieldName = iterator.next()
-            val nodeType = jsonNode[fieldName].nodeType
-            output.append(convertNodeToStringSchemaNode(jsonNode, nodeType, fieldName))
-        }
-        if (type == null) output.append("}")
-        output.append("}")
-        return output.toString()
+        val schema = generateSchema(title, description, jsonNode)
+        return cleanup(schema.toString())
     }
 
-    private fun convertNodeToStringSchemaNode(
-        jsonNode: JsonNode, nodeType: JsonNodeType, key: String
-    ): String {
-        val result = StringBuilder("\"$key\": { \"type\": \"")
-        val node: JsonNode?
-        when (nodeType) {
-            ARRAY -> {
-                node = jsonNode[key][0]
-                result.append("array\", \"items\": { \"properties\":")
-                result.append(outputAsString(null, null, node.toString(), ARRAY))
-                result.append("}},")
-            }
-            BOOLEAN -> result.append("boolean\" },")
-            NUMBER -> result.append("number\" },")
-            OBJECT -> {
-                node = jsonNode[key]
-                result.append("object\", \"properties\": ")
-                result.append(outputAsString(null, null, node.toString(), OBJECT))
-                result.append("},")
-            }
-            STRING -> result.append("string\" },")
-            NULL -> result.append("null\" },")
-            BINARY, MISSING, POJO -> {/*just skipping it*/}
+    private fun generateSchema(
+        title: String?,
+        description: String?,
+        jsonNode: JsonNode
+    ): JSONObject {
+        val schema = JSONObject()
+        title?.let { schema.put("title", it) }
+        description?.let { schema.put("description", it) }
+        schema.put("type", "object")
+        schema.put("properties", generateProperties(jsonNode))
+        return schema
+    }
+
+    private fun generateProperties(jsonNode: JsonNode): JSONObject {
+        val properties = JSONObject()
+        jsonNode.fields().forEach { (fieldName, node) ->
+            properties.put(fieldName, generateNodeSchema(node))
         }
-        return result.toString()
+        return properties
+    }
+
+    private fun generateNodeSchema(node: JsonNode): JSONObject {
+        val schema = JSONObject()
+        when (node.nodeType) {
+            JsonNodeType.ARRAY -> {
+                schema.put("type", "array")
+                if (node.isArray && node.size() > 0) {
+                    schema.put("items", generateNodeSchema(node[0]))
+                }
+            }
+            JsonNodeType.BOOLEAN -> schema.put("type", "boolean")
+            JsonNodeType.NUMBER -> schema.put("type", "number")
+            JsonNodeType.OBJECT -> {
+                schema.put("type", "object")
+                schema.put("properties", generateProperties(node))
+            }
+            JsonNodeType.STRING -> schema.put("type", "string")
+            JsonNodeType.NULL -> schema.put("type", "null")
+            else -> {
+                // Ignoring unsupported types
+            }
+        }
+        return schema
     }
 
     private fun cleanup(dirty: String): String {
